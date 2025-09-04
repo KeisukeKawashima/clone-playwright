@@ -13,6 +13,10 @@
   "keywords": ["playwright", "browser", "automation", "handmade"],
   "author": "Keisuke",
   "license": "MIT",
+  "dependencies": {
+    "ws": "^8.0.0",
+    "@types/ws": "^8.0.0"
+  },
   "devDependencies": {
     "typescript": "^5.0.0",
     "@types/node": "^20.0.0",
