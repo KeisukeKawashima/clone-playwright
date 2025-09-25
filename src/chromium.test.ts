@@ -13,11 +13,6 @@ describe('Chromium', () => {
         expect(page).toBeDefined();
     })
 
-    test('should get WebSocket URL from CHrome', async () => {
-        browser = await chromium.launch();
-        const wsUrl = await browser.getWebSocketUrl();
-        expect(wsUrl).toContain('ws://localhost:9222/devtools/page/')
-    })
 
     test('should get real page title from Chrome', async () => {
         browser = await chromium.launch();

@@ -3,7 +3,6 @@ import { spawn } from 'child_process';
 export interface Browser {
     close: () => void;
     newPage: () => Promise<Page>;
-    getWebSocketUrl: () => Promise<string>;
 }
 
 export interface Page {
@@ -18,20 +17,23 @@ export const chromium = {
     async launch(): Promise<Browser> {
         const chromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
         const chromeProcess = spawn(chromePath, [ "--headless", '--remote-debugging-port=9222']);
+        const wsUrl = `ws://localhost:9222/devtools/page/`;
+
         return {
             close: () => chromeProcess.kill(),
             newPage: async () => {
-                const page = new PageImpl();
+                const page = new PageImpl(wsUrl);
                 return page;
             },
-            getWebSocketUrl: async () => {
-                return 'ws://localhost:9222/devtools/page/';
-            }
         }
     },
 }
 
 class PageImpl implements Page {
+    constructor( private wsUrl: string) {
+        this.wsUrl = wsUrl;
+    }
+
     async goto(url: string): Promise<void> {
         // Implementation for navigating to a URL
     }
@@ -45,3 +47,4 @@ class PageImpl implements Page {
         // Implementation for closing the page
     }
 }
+
