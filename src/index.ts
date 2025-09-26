@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { WebSocket } from 'ws';
 
 export interface Browser {
     close: () => void;
@@ -39,8 +40,36 @@ class PageImpl implements Page {
     }
 
     async title(): Promise<string> {
-        // Implementation for getting the page title
-        return "Mock Title";
+        return new Promise((resolve, reject) => {
+            const ws = new WebSocket(this.wsUrl);
+            
+            ws.on('open', ( )=> {
+                const message = {
+                    id: 1,
+                    method: 'Runtime.evaluate',
+                    params: {
+                        expression: 'document.title',
+                        returnByValue: true
+                    }
+                };
+                ws.send(JSON.stringify(message));
+            });
+
+            ws.on('message', (data) => {
+                const response = JSON.parse(data.toString());
+                if (response.id === 1) {
+                    if (response.result) {
+                        resolve(response.result.value);
+                    } else {
+                        reject(new Error('Failed to get page title'));
+                    }
+                }
+            });
+
+            ws.on('error', (error) => {
+                reject(error);
+            });
+        });
     }
 
     close(): void {
