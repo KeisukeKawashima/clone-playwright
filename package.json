@@ -10,7 +10,12 @@
     "format": "prettier --write .",
     "lint": "eslint src/**/*.ts"
   },
-  "keywords": ["playwright", "browser", "automation", "handmade"],
+  "keywords": [
+    "playwright",
+    "browser",
+    "automation",
+    "handmade"
+  ],
   "author": "Keisuke",
   "license": "MIT",
   "dependencies": {
