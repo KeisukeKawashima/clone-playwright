@@ -10,6 +10,8 @@ export interface Page {
   goto: (url: string) => Promise<void>;
   title: () => Promise<string>;
   close: () => void;
+  evaluate: (expression: string) => Promise<any>;
+  click: (selector: string) => Promise<void>;
 }
 
 export const chromium = {
@@ -21,14 +23,14 @@ export const chromium = {
       "--remote-debugging-port=9222",
     ]);
     const wsUrl = `ws://localhost:9222/devtools/page/`;
-    await new Promise(resolve => setTimeout(resolve, 3000)); 
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     return {
       close: () => chromeProcess.kill(),
       newPage: async () => {
         // 実際のWebSocket URLを取得
         const response = await fetch("http://localhost:9222/json");
-        const tabs = await response.json() as any[];
+        const tabs = (await response.json()) as any[];
         const pageTab = tabs.find((tab: any) => tab.type === "page");
 
         if (!pageTab) {
@@ -49,29 +51,29 @@ class PageImpl implements Page {
 
   async goto(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
-        const ws = new WebSocket(this.wsUrl);
-        ws.on("open", () => {
-          const message = {
-            id: 2,
-            method: "Page.navigate",
-            params: {
-              url: url,
-            },
-          };
-          ws.send(JSON.stringify(message));
-        });
-
-        ws.on("message", (data) => {
-          const response = JSON.parse(data.toString());
-
-          if (response.id === 2 && response.result) {
-            ws.close();
-            setTimeout(() => resolve(), 1000);
-            }
-        });
-
-        ws.on("error", reject);
+      const ws = new WebSocket(this.wsUrl);
+      ws.on("open", () => {
+        const message = {
+          id: 2,
+          method: "Page.navigate",
+          params: {
+            url: url,
+          },
+        };
+        ws.send(JSON.stringify(message));
       });
+
+      ws.on("message", (data) => {
+        const response = JSON.parse(data.toString());
+
+        if (response.id === 2 && response.result) {
+          ws.close();
+          setTimeout(() => resolve(), 1000);
+        }
+      });
+
+      ws.on("error", reject);
+    });
   }
 
   async title(): Promise<string> {
@@ -106,4 +108,11 @@ class PageImpl implements Page {
   close(): void {
     // Implementation for closing the page
   }
+
+    async evaluate(expression: string): Promise<any> {
+        
+    }
+
+    async click(selector: string): Promise<void> {
+    }
 }
