@@ -110,7 +110,32 @@ class PageImpl implements Page {
   }
 
     async evaluate(expression: string): Promise<any> {
-        
+      return new Promise((resolve, reject) => {
+        const ws = new WebSocket(this.wsUrl);
+
+        ws.on('open', () => {
+          const message = {
+            id:3,
+            method: 'Runtime.evaluate',
+            params: {
+              expression: expression,
+              returnByValue: true,
+            }
+          }
+          ws.send(JSON.stringify(message));
+        })
+
+        ws.on('message', (data) => {
+          const response = JSON.parse(data.toString());
+          if (response.id === 3 && response.result) {
+            const result = response.result.result.value;
+            ws.close();
+            resolve(result);
+          }
+        })
+
+        ws.on('error', reject);
+      })
     }
 
     async click(selector: string): Promise<void> {
