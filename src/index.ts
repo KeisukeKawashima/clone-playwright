@@ -139,5 +139,48 @@ class PageImpl implements Page {
     }
 
     async click(selector: string): Promise<void> {
+      return new Promise((resolve, reject) => {
+         const ws = new WebSocket(this.wsUrl);
+
+          ws.on('open', () => {
+              // 1. まずドキュメント取得
+              const message = {
+                  id: 4,
+                  method: 'DOM.getDocument'
+              };
+              ws.send(JSON.stringify(message));
+          });
+
+          ws.on('message', (data) => {
+              const response = JSON.parse(data.toString());
+
+              if (response.id === 4 && response.result) {
+                  // ドキュメント取得成功
+                  console.log('Document obtained:', response.result.root.nodeId);
+
+                  // 2. 要素検索
+                  const searchMessage = {
+                      id: 5,
+                      method: 'DOM.querySelector',
+                      params: {
+                          nodeId: response.result.root.nodeId,
+                          selector: selector
+                      }
+                  };
+                  ws.send(JSON.stringify(searchMessage));
+              }
+
+              if (response.id === 5 && response.result) {
+                  // 要素検索成功
+                  console.log('Element found:', response.result.nodeId);
+
+                  // とりあえず成功として resolve
+                  ws.close();
+                  resolve();
+              }
+          });
+
+          ws.on('error', reject);
+      })
     }
 }
